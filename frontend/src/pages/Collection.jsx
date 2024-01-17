@@ -34,37 +34,29 @@ const columns = [
     dataIndex: "status",
   },
 ];
-const data = [];
-for (let i = 1; i < 46; i++) {
-  data.push({
-    key: i,
-    no: i,
-    name: "Knalpot",
-    price: "Rp2.0000.000",
-    date: new Date().toLocaleDateString(),
-  });
-}
 
 function Collection() {
   const location = useLocation();
   const queryParams = new URLSearchParams(location.search);
-  const collectionId = queryParams.get("id");
+  const collectionId = queryParams.get("collection");
 
   const [open, setOpen] = useState(false);
   const [collection, setCollection] = useState({ name: "", wishes: [] });
   const [loading, setLoading] = useState(false);
   const [selectedRowKeys, setSelectedRowKeys] = useState([]);
+  const [wishData, setWishData] = useState([]);
 
   const fetchCollection = async () => {
     try {
       const response = await fetch(
-        `http://localhost:8080/collection?id=${collectionId}`
+        `http://localhost:8080/collection?collection=${collectionId}`
       );
       if (!response.ok) {
         throw new Error("Failed to fetch collection");
       }
       const data = await response.json();
       setCollection(data);
+      setWishData(data.wishes || []);
     } catch (error) {
       console.error("Error fetching collection:", error);
     }
@@ -196,7 +188,7 @@ function Collection() {
               fixed
               rowSelection={rowSelection}
               columns={columns}
-              dataSource={data}
+              dataSource={wishData}
             />
           </div>
         )}

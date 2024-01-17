@@ -80,7 +80,7 @@ function Home() {
   };
 
   const goToCollection = (id) => {
-    navigate(`/collection?id=${id}`);
+    navigate(`/collection?collection=${id}`);
   };
 
   return (
