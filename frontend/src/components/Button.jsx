@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { Menu, Dropdown, Button, Modal } from "antd";
+import { Menu, Dropdown, Button, Modal, notification } from "antd";
 import {
   EllipsisOutlined,
   EditOutlined,
@@ -57,6 +57,13 @@ function DropdownAction({
             if (!response.ok) {
               throw new Error("Error deleting collection");
             }
+
+            notification.success({
+              message: "Collection Deleted",
+              description: "The collection has been deleted successfully.",
+              placement: "top",
+            });
+
             if (onActionComplete) {
               onActionComplete();
             }

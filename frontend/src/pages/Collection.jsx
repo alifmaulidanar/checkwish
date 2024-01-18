@@ -1,11 +1,7 @@
 import { useState, useEffect } from "react";
 import { Link, useLocation } from "react-router-dom";
-import { Breadcrumb, Empty, Button, Table, Modal, notification } from "antd";
-import {
-  EditOutlined,
-  DeleteOutlined,
-  ExclamationCircleOutlined,
-} from "@ant-design/icons";
+import { Breadcrumb, Empty, Table, Modal, notification } from "antd";
+import { ExclamationCircleOutlined } from "@ant-design/icons";
 import { AddNewCollection, EditWish, DeleteWish } from "../components/Button";
 import { WishModal } from "../components/Modal";
 
@@ -22,11 +18,10 @@ function Collection() {
   const [wishData, setWishData] = useState([]);
 
   const [api, contextHolder] = notification.useNotification();
-  const openNotification = (placement, type) => {
+  const openNotification = (placement, type, name) => {
     api[type]({
-      message: `Item deleted successfully`,
-      description:
-        "This is the content of the notification. This is the content of the notification. This is the content of the notification.",
+      message: `Item deleted`,
+      description: `"${name}" has been deleted successfully.`,
       placement,
     });
   };
@@ -52,6 +47,7 @@ function Collection() {
     key: index,
     no: index + 1,
     wishId: wish.id,
+    wishName: wish.name,
   }));
 
   useEffect(() => {
@@ -87,7 +83,7 @@ function Collection() {
     console.log("EditWish clicked for item:", values);
   };
 
-  const onDelete = async () => {
+  const onDelete = async (record) => {
     Modal.confirm({
       title: "Do you want to delete this item?",
       icon: <ExclamationCircleOutlined />,
@@ -98,14 +94,16 @@ function Collection() {
       onOk() {
         return new Promise(async (resolve, reject) => {
           try {
-            const wishIdsToDelete = selectedRowKeys.map(
-              (key) => data.find((item) => item.key === key)?.wishId
-            );
+            const newData = data.map((item) => {
+              if (item.key === record.key) {
+                return { ...item, deleting: true };
+              }
+              return item;
+            });
+            setWishData(newData);
 
             const response = await fetch(
-              `http://localhost:8080/collection/delete?collection=${collectionId}&wish=${wishIdsToDelete.join(
-                ","
-              )}`,
+              `http://localhost:8080/collection/delete?collection=${collectionId}&wish=${record.wishId}`,
               {
                 method: "DELETE",
               }
@@ -115,14 +113,20 @@ function Collection() {
               throw new Error("Network response was not ok");
             }
 
-            openNotification("top", "success");
+            openNotification("top", "success", `${record.wishName}`);
             fetchCollection();
-            setSelectedRowKeys([]);
-            resolve();
-            // message.success("Selected items deleted successfully");
           } catch (error) {
-            console.error("Error deleting items:", error);
+            console.error("Error deleting item:", error);
             reject(error);
+          } finally {
+            const newData = data.map((item) => {
+              if (item.key === record.key) {
+                return { ...item, deleting: false };
+              }
+              return item;
+            });
+            setWishData(newData);
+            resolve();
           }
         });
       },
@@ -193,8 +197,12 @@ function Collection() {
       dataIndex: "action",
       render: (text, record) => (
         <span className="flex gap-x-2">
-          <EditWish onClick={() => onEdit(record)} loading={loading} />
-          <DeleteWish danger="true" onClick={onDelete} loading={loading} />
+          <EditWish onClick={() => onEdit(record)} loading={record.editing} />
+          <DeleteWish
+            danger="true"
+            onClick={() => onDelete(record)}
+            loading={record.deleting}
+          />
         </span>
       ),
     },
@@ -240,31 +248,7 @@ function Collection() {
               />
             </Empty>
           ) : (
-            <div className="">
-              <div
-                style={{
-                  marginBottom: 16,
-                }}
-              >
-                <EditWish
-                  onClick={start}
-                  disabled={!hasSelected}
-                  loading={loading}
-                  className="mr-4"
-                />
-                <DeleteWish
-                  danger="true"
-                  onClick={onDelete}
-                  disabled={!hasSelected}
-                  loading={loading}
-                  className="w-auto mr-4"
-                />
-                <span className="ml-4">
-                  {hasSelected
-                    ? `Selected ${selectedRowKeys.length} items`
-                    : ""}
-                </span>
-              </div>
+            <div>
               <Table
                 fixed
                 rowSelection={rowSelection}
