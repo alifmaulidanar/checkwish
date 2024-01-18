@@ -79,8 +79,8 @@ function Home() {
     }
   };
 
-  const goToCollection = (id) => {
-    navigate(`/collection?collection=${id}`);
+  const goToCollection = (id, name) => {
+    navigate(`/collection?collection=${id}`, { state: name });
   };
 
   return (
@@ -138,7 +138,9 @@ function Home() {
                 <div className="grid h-full gap-y-4">
                   <p>{collection.description}</p>
                   <OpenCollection
-                    onClick={() => goToCollection(collection.id)}
+                    onClick={() =>
+                      goToCollection(collection.id, collection.name)
+                    }
                   />
                 </div>
               </Card>

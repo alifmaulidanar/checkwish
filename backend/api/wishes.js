@@ -50,7 +50,7 @@ const formatDatetime = (firestoreTimestamp) => {
     return "";
   }
 
-  return new Intl.DateTimeFormat("en-GB", {
+  const dateTimeFormat = new Intl.DateTimeFormat("en-GB", {
     day: "2-digit",
     month: "2-digit",
     year: "numeric",
@@ -59,7 +59,13 @@ const formatDatetime = (firestoreTimestamp) => {
     second: "2-digit",
     hour12: false,
     timeZone: "Asia/Jakarta",
-  }).format(new Date(date));
+  });
+
+  const formattedDateTime = dateTimeFormat.format(new Date(date));
+  const formattedDate = formattedDateTime.split(",")[0];
+  const formattedTime = formattedDateTime.split(",")[1].trim();
+
+  return `${formattedTime} - ${formattedDate}`;
 };
 
 router.get("/", async (req, res) => {
@@ -88,7 +94,10 @@ router.get("/", async (req, res) => {
         .doc(wishlistId.toString());
       const wishlistDoc = await wishlistDocRef.get();
       if (wishlistDoc.exists) {
-        return wishlistDoc.data();
+        const wishlistData = wishlistDoc.data();
+        // Format datetime using formatDatetime function
+        wishlistData.date = formatDatetime(wishlistData.date); // Assuming date is the datetime field
+        return wishlistData;
       }
       return null;
     });

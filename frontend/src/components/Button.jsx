@@ -117,9 +117,8 @@ function DropdownAction({
         <Button
           className="flex items-center justify-center w-6"
           onClick={(e) => e.preventDefault()}
-        >
-          <EllipsisOutlined />
-        </Button>
+          icon={<EllipsisOutlined />}
+        />
       </Dropdown>
 
       <CollectionModal
@@ -143,4 +142,39 @@ function DropdownAction({
   );
 }
 
-export { OpenCollection, AddNewCollection, DropdownAction };
+function EditWish({ onClick, disabled, loading, className }) {
+  return (
+    <>
+      <Button
+        onClick={onClick}
+        disabled={disabled}
+        loading={loading}
+        className={className}
+        icon={<EditOutlined />}
+      />
+    </>
+  );
+}
+
+function DeleteWish({ danger, onClick, disabled, loading, className }) {
+  return (
+    <>
+      <Button
+        danger={danger}
+        onClick={onClick}
+        disabled={disabled}
+        loading={loading}
+        className={className}
+        icon={<DeleteOutlined />}
+      />
+    </>
+  );
+}
+
+export {
+  OpenCollection,
+  AddNewCollection,
+  DropdownAction,
+  EditWish,
+  DeleteWish,
+};
