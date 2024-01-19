@@ -6,7 +6,7 @@ import {
   DeleteOutlined,
   ExclamationCircleOutlined,
 } from "@ant-design/icons";
-import { CollectionModal } from "./Modal";
+import { CollectionModal, WishModal } from "./Modal";
 
 function OpenCollection({ onClick }) {
   return (
@@ -149,15 +149,45 @@ function DropdownAction({
   );
 }
 
-function EditWish({ onClick, disabled, loading, className }) {
+function EditWish({
+  onClick,
+  onEdit,
+  className,
+  valueName,
+  valuePrice,
+  valuePlatform,
+  valueLink,
+  valueStatus,
+}) {
+  const [editModalVisible, setEditModalVisible] = useState(false);
+
+  const handleClick = () => {
+    setEditModalVisible(true);
+  };
+
   return (
     <>
       <Button
-        onClick={onClick}
-        disabled={disabled}
-        loading={loading}
+        onClick={handleClick}
         className={className}
         icon={<EditOutlined />}
+      />
+
+      <WishModal
+        title="Edit Item"
+        buttonText="Save"
+        open={editModalVisible}
+        onCreate={(values) => {
+          onClick({ ...values });
+          onEdit({ ...values });
+          setEditModalVisible(false);
+        }}
+        onCancel={() => setEditModalVisible(false)}
+        valueName={valueName}
+        valuePrice={valuePrice}
+        valuePlatform={valuePlatform}
+        valueLink={valueLink}
+        valueStatus={valueStatus}
       />
     </>
   );

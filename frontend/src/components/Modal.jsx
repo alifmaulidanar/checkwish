@@ -95,9 +95,17 @@ const WishModal = ({
   onCreate,
   onCancel,
   valueName = "",
+  valuePrice = "",
+  valuePlatform = "",
+  valueLink = "",
+  valueStatus = "",
 }) => {
   const [form] = Form.useForm();
   const [nameValue, setNameValue] = useState(valueName);
+  const [priceValue, setPriceValue] = useState(valuePrice);
+  const [platformValue, setPlatformValue] = useState(valuePlatform);
+  const [linkValue, setLinkValue] = useState(valueLink);
+  const [statusValue, setStatusValue] = useState(valueStatus);
 
   const handleOk = () => {
     form
@@ -105,6 +113,9 @@ const WishModal = ({
       .then((values) => {
         form.resetFields();
         setNameValue("");
+        setPriceValue("");
+        setPlatformValue("");
+        setLinkValue("");
         onCreate(values);
       })
       .catch((info) => {
@@ -120,9 +131,6 @@ const WishModal = ({
       onCancel={onCancel}
       onOk={handleOk}
       footer={[
-        // <Button danger key="back" onClick={onCancel}>
-        //   Cancel
-        // </Button>,
         <Button key="submit" className="create-button" onClick={handleOk}>
           {buttonText}
         </Button>,
@@ -148,7 +156,7 @@ const WishModal = ({
           ]}
         >
           <Input
-            defaultValue={nameValue}
+            defaultValue={valueName}
             placeholder="Item name"
             onChange={(e) => setNameValue(e.target.value)}
           />
@@ -165,6 +173,7 @@ const WishModal = ({
           ]}
         >
           <Input
+            defaultValue={valuePrice}
             placeholder="Input your wish price"
             onChange={(e) => setNameValue(e.target.value)}
           />
@@ -181,6 +190,7 @@ const WishModal = ({
           ]}
         >
           <Input
+            defaultValue={valuePlatform}
             placeholder="Your wish platform located"
             onChange={(e) => setNameValue(e.target.value)}
           />
@@ -197,6 +207,7 @@ const WishModal = ({
           ]}
         >
           <Input
+            defaultValue={valueLink}
             placeholder="Link to your wish"
             onChange={(e) => setNameValue(e.target.value)}
           />
@@ -213,7 +224,7 @@ const WishModal = ({
             },
           ]}
         >
-          <Select placeholder="Choose status">
+          <Select placeholder="Choose status" defaultValue={valueStatus}>
             <Option value="on going">On going</Option>
             <Option value="completed">Completed</Option>
           </Select>

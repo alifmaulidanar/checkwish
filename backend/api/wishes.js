@@ -9,7 +9,7 @@ const router = express.Router();
 // Validate input
 const schema = Joi.object({
   name: Joi.string().max(40).required(),
-  price: Joi.number().max(255).positive().required(),
+  price: Joi.number().positive().required(),
   platform: Joi.string().required(),
   link: Joi.string().uri().required(),
   status: Joi.string().valid("on going", "completed").required(),
@@ -120,11 +120,15 @@ router.get("/", async (req, res) => {
 
 router.post("/add", async (req, res) => {
   try {
-    const { name, price, platform, link, status } = req.body;
     const collectionId = req.query.collection;
+    const { value, error } = schema.validate(req.body);
 
     if (!collectionId) {
       return res.status(400).json({ error: "Missing collection ID parameter" });
+    }
+
+    if (error) {
+      return res.status(400).json({ error: error.details[0].message });
     }
 
     const wishlistDocs = await db
@@ -151,12 +155,8 @@ router.post("/add", async (req, res) => {
     const date = new Date();
     const newWish = {
       id: newWishId,
-      name,
-      price,
       date: date,
-      platform,
-      link,
-      status,
+      ...value,
     };
 
     const updatedWishes = { id: newWishId, date: date };
@@ -181,34 +181,55 @@ router.post("/add", async (req, res) => {
 
 router.patch("/edit", async (req, res) => {
   try {
-    const id = req.query.id;
+    const collectionId = req.query.collection;
+    const wishId = req.query.wish;
     const { value, error } = schema.validate(req.body);
 
-    if (!id) {
-      return res.status(400).send("Missing ID parameter");
+    if (!collectionId || !wishId) {
+      return res
+        .status(400)
+        .json({ error: "Missing collection ID or wish ID parameter" });
     }
 
     if (error) {
-      return res.status(400).send(error.details[0].message);
+      return res.status(400).json({ error: error.details[0].message });
     }
 
-    const collectionRef = db.collection("collections");
-    const docRef = collectionRef.doc(id);
-    const doc = await docRef.get();
+    const collectionRef = db.collection("collections").doc(collectionId);
+    const collectionDoc = await collectionRef.get();
 
-    if (!doc.exists) {
-      return res.status(404).send("Collection not found");
+    if (!collectionDoc.exists) {
+      return res.status(404).json({ error: "Collection not found" });
     }
 
-    await docRef.update(value);
-    const result = {
-      id: id,
+    const collectionData = collectionDoc.data() || {};
+    const wishes = collectionData.wishlist || [];
+    const wishIndex = wishes.findIndex((wish) => wish.id === parseInt(wishId));
+
+    if (wishIndex === -1) {
+      return res
+        .status(400)
+        .json({ error: "Wish not found in the collection" });
+    }
+
+    const updatedWish = {
+      ...wishes[wishIndex],
       ...value,
     };
 
+    wishes[wishIndex] = updatedWish;
+    collectionData.wishlist = wishes;
+
+    await collectionRef.update(collectionData);
+    await db.collection("wishlist").doc(wishId).update(value);
+
     res.status(200).json({
       message: `Collection updated successfully`,
-      data: result,
+      data: wishes[wishIndex],
+    });
+    logger.info(`Wish with ID ${wishId} is updated`, {
+      action: "WISH_UPDATED",
+      wishId: parseInt(wishId),
     });
   } catch (error) {
     console.error(error);

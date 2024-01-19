@@ -12,6 +12,8 @@ function Collection() {
   const name = location.state || {};
 
   const [open, setOpen] = useState(false);
+  const [editModalVisible, setEditModalVisible] = useState(false);
+  const [editModalData, setEditModalData] = useState(null);
   const [collection, setCollection] = useState({ name: "", wishes: [] });
   const [loading, setLoading] = useState(false);
   const [selectedRowKeys, setSelectedRowKeys] = useState([]);
@@ -54,6 +56,11 @@ function Collection() {
     fetchCollection();
   }, []);
 
+  const showEditModal = (record) => {
+    setEditModalData(record);
+    setEditModalVisible(true);
+  };
+
   const onCreate = async (values) => {
     try {
       const response = await fetch(
@@ -80,7 +87,32 @@ function Collection() {
   };
 
   const onEdit = async (values) => {
-    console.log("EditWish clicked for item:", values);
+    const { id, name, price, platform, link, status } = values;
+    const data = { name, price, platform, link, status };
+
+    try {
+      const response = await fetch(
+        `http://localhost:8080/collection/edit?collection=${collectionId}&wish=${id}`,
+        {
+          method: "PATCH",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify(data),
+        }
+      );
+
+      if (!response.ok) {
+        throw new Error("Network response was not ok");
+      }
+
+      setEditModalVisible(false);
+
+      // Refresh the collection list
+      fetchCollection();
+    } catch (error) {
+      console.error("Error adding new collection:", error);
+    }
   };
 
   const onDelete = async (record) => {
@@ -134,14 +166,6 @@ function Collection() {
   };
 
   // Table
-  const start = () => {
-    setLoading(true);
-    // ajax request after empty completing
-    setTimeout(() => {
-      setSelectedRowKeys([]);
-      setLoading(false);
-    }, 1000);
-  };
   const onSelectChange = (newSelectedRowKeys) => {
     setSelectedRowKeys(newSelectedRowKeys);
   };
@@ -197,7 +221,15 @@ function Collection() {
       dataIndex: "action",
       render: (text, record) => (
         <span className="flex gap-x-2">
-          <EditWish onClick={() => onEdit(record)} loading={record.editing} />
+          <EditWish
+            onClick={(values) => showEditModal({ ...record, ...values })}
+            onEdit={onEdit}
+            valueName={record.name}
+            valuePrice={record.price}
+            valuePlatform={record.platform}
+            valueLink={record.link}
+            valueStatus={record.status}
+          />
           <DeleteWish
             danger="true"
             onClick={() => onDelete(record)}
