@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Form, Input, Modal, Button, Select } from "antd";
 const { Option } = Select;
 import TextArea from "antd/es/input/TextArea";
@@ -18,21 +18,40 @@ const CollectionModal = ({
   placeholderDescription = "",
 }) => {
   const [form] = Form.useForm();
-  const [nameValue, setNameValue] = useState(valueName);
-  const [descriptionValue, setDescriptionValue] = useState(valueDescription);
+  const [initialValues, setInitialValues] = useState({
+    name: valueName,
+    description: valueDescription,
+  });
+
+  useEffect(() => {
+    setInitialValues({
+      name: valueName,
+      description: valueDescription,
+    });
+    if (open) {
+      form.setFieldsValue({
+        name: valueName,
+        description: valueDescription,
+      });
+    }
+  }, [valueName, valueDescription, form, open]);
 
   const handleOk = () => {
     form
       .validateFields()
       .then((values) => {
-        form.resetFields();
-        setNameValue("");
-        setDescriptionValue("");
         onCreate(values);
+        form.resetFields();
+        onCancel();
       })
       .catch((info) => {
         console.log("Validate Failed:", info);
       });
+  };
+
+  const handleCancel = () => {
+    form.setFieldsValue(initialValues);
+    onCancel();
   };
 
   return (
@@ -40,25 +59,15 @@ const CollectionModal = ({
       open={open}
       title={title}
       className="new-collection-modal"
-      onCancel={onCancel}
+      onCancel={handleCancel}
       onOk={handleOk}
       footer={[
-        // <Button danger key="back" onClick={onCancel}>
-        //   Cancel
-        // </Button>,
         <Button key="submit" className="create-button" onClick={handleOk}>
           {buttonText}
         </Button>,
       ]}
     >
-      <Form
-        form={form}
-        layout="vertical"
-        name="form_in_modal"
-        initialValues={{
-          modifier: "public",
-        }}
-      >
+      <Form form={form} layout="vertical" name="form_in_modal">
         <Form.Item
           name="name"
           label={name}
@@ -69,19 +78,19 @@ const CollectionModal = ({
             },
           ]}
         >
-          <Input
-            defaultValue={nameValue}
-            placeholder={placeholderName}
-            onChange={(e) => setNameValue(e.target.value)}
-          />
+          <Input placeholder={placeholderName} />
         </Form.Item>
-        <Form.Item name="description" label={description}>
-          <TextArea
-            autoSize
-            defaultValue={descriptionValue}
-            placeholder={placeholderDescription}
-            onChange={(e) => setDescriptionValue(e.target.value)}
-          />
+        <Form.Item
+          name="description"
+          label={description}
+          rules={[
+            {
+              required: true,
+              message: "Please input the description",
+            },
+          ]}
+        >
+          <TextArea autoSize placeholder={placeholderDescription} />
         </Form.Item>
       </Form>
     </Modal>
@@ -101,26 +110,57 @@ const WishModal = ({
   valueStatus = "",
 }) => {
   const [form] = Form.useForm();
-  const [nameValue, setNameValue] = useState(valueName);
-  const [priceValue, setPriceValue] = useState(valuePrice);
-  const [platformValue, setPlatformValue] = useState(valuePlatform);
-  const [linkValue, setLinkValue] = useState(valueLink);
-  const [statusValue, setStatusValue] = useState(valueStatus);
+  const [initialValues, setInitialValues] = useState({
+    name: valueName,
+    price: valuePrice,
+    platform: valuePlatform,
+    link: valueLink,
+    status: valueStatus,
+  });
+
+  useEffect(() => {
+    setInitialValues({
+      name: valueName,
+      price: valuePrice,
+      platform: valuePlatform,
+      link: valueLink,
+      status: valueStatus,
+    });
+    if (open) {
+      form.setFieldsValue({
+        name: valueName,
+        price: valuePrice,
+        platform: valuePlatform,
+        link: valueLink,
+        status: valueStatus,
+      });
+    }
+  }, [
+    valueName,
+    valuePrice,
+    valuePlatform,
+    valueLink,
+    valueStatus,
+    form,
+    open,
+  ]);
 
   const handleOk = () => {
     form
       .validateFields()
       .then((values) => {
-        form.resetFields();
-        setNameValue("");
-        setPriceValue("");
-        setPlatformValue("");
-        setLinkValue("");
         onCreate(values);
+        form.resetFields();
+        onCancel();
       })
       .catch((info) => {
         console.log("Validate Failed:", info);
       });
+  };
+
+  const handleCancel = () => {
+    form.setFieldsValue(initialValues);
+    onCancel();
   };
 
   return (
@@ -128,7 +168,7 @@ const WishModal = ({
       open={open}
       title={title}
       className="new-collection-modal"
-      onCancel={onCancel}
+      onCancel={handleCancel}
       onOk={handleOk}
       footer={[
         <Button key="submit" className="create-button" onClick={handleOk}>
@@ -136,14 +176,7 @@ const WishModal = ({
         </Button>,
       ]}
     >
-      <Form
-        form={form}
-        layout="vertical"
-        name="form_in_modal"
-        initialValues={{
-          modifier: "public",
-        }}
-      >
+      <Form form={form} layout="vertical" name="form_in_modal">
         {/* Name */}
         <Form.Item
           name="name"
@@ -155,12 +188,9 @@ const WishModal = ({
             },
           ]}
         >
-          <Input
-            defaultValue={valueName}
-            placeholder="Item name"
-            onChange={(e) => setNameValue(e.target.value)}
-          />
+          <Input placeholder="Item name" />
         </Form.Item>
+
         {/* Price */}
         <Form.Item
           name="price"
@@ -172,12 +202,9 @@ const WishModal = ({
             },
           ]}
         >
-          <Input
-            defaultValue={valuePrice}
-            placeholder="Input your wish price"
-            onChange={(e) => setNameValue(e.target.value)}
-          />
+          <Input placeholder="Input your wish price" />
         </Form.Item>
+
         {/* Platform */}
         <Form.Item
           name="platform"
@@ -189,12 +216,9 @@ const WishModal = ({
             },
           ]}
         >
-          <Input
-            defaultValue={valuePlatform}
-            placeholder="Your wish platform located"
-            onChange={(e) => setNameValue(e.target.value)}
-          />
+          <Input placeholder="Your wish platform located" />
         </Form.Item>
+
         {/* Link */}
         <Form.Item
           name="link"
@@ -206,12 +230,9 @@ const WishModal = ({
             },
           ]}
         >
-          <Input
-            defaultValue={valueLink}
-            placeholder="Link to your wish"
-            onChange={(e) => setNameValue(e.target.value)}
-          />
+          <Input placeholder="Link to your wish" />
         </Form.Item>
+
         {/* Status */}
         <Form.Item
           name="status"
@@ -224,7 +245,7 @@ const WishModal = ({
             },
           ]}
         >
-          <Select placeholder="Choose status" defaultValue={valueStatus}>
+          <Select placeholder="Choose status">
             <Option value="on going">On going</Option>
             <Option value="completed">Completed</Option>
           </Select>

@@ -61,7 +61,13 @@ router.post("/add", async (req, res) => {
 
       // New document reference with auto-incremented ID
       const newCollectionRef = collectionRef.doc(`${nextId}`);
-      const newCollectionData = { id: nextId, ...value, wishlist: [] };
+      const newCollectionData = {
+        id: nextId,
+        ...value,
+        wishlist: [],
+        date: new Date(),
+        dateUpdated: new Date(),
+      };
 
       transaction.set(newCollectionRef, newCollectionData);
 
@@ -103,10 +109,11 @@ router.patch("/edit", async (req, res) => {
       return res.status(404).send("Collection not found");
     }
 
-    await docRef.update(value);
+    await docRef.update({ ...value, dateUpdated: new Date() });
     const result = {
       id: id,
       ...value,
+      dateUpdated: new Date(),
     };
 
     res.status(200).json({
@@ -141,6 +148,14 @@ router.delete("/delete", async (req, res) => {
     if (!doc.exists) {
       return res.status(404).json({ error: "Collection not found" });
     }
+
+    const collectionData = doc.data();
+    const wishIds =
+      collectionData.wishlist.map((wish) => wish.id.toString()) || [];
+
+    // Hapus setiap wish dari koleksi 'wishlists'
+    const wishRef = db.collection("wishlist");
+    await Promise.all(wishIds.map((wishId) => wishRef.doc(wishId).delete()));
 
     await docRef.delete();
     res

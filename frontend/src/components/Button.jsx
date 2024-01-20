@@ -41,7 +41,8 @@ function DropdownAction({
     Modal.confirm({
       title: "Do you want to delete this collection?",
       icon: <ExclamationCircleOutlined />,
-      content: "This action cannot be undone.",
+      content:
+        "This action will delete all the wishes item in your collection and cannot be undone.",
       okButtonProps: {
         className: "ok-button",
       },
@@ -150,6 +151,7 @@ function DropdownAction({
 }
 
 function EditWish({
+  id,
   onClick,
   onEdit,
   className,
@@ -179,7 +181,7 @@ function EditWish({
         open={editModalVisible}
         onCreate={(values) => {
           onClick({ ...values });
-          onEdit({ ...values });
+          onEdit({ ...values, id: id });
           setEditModalVisible(false);
         }}
         onCancel={() => setEditModalVisible(false)}

@@ -203,6 +203,10 @@ function Collection() {
       dataIndex: "date",
     },
     {
+      title: "Last Updated",
+      dataIndex: "dateUpdated",
+    },
+    {
       title: "Platform",
       dataIndex: "platform",
     },
@@ -224,6 +228,7 @@ function Collection() {
           <EditWish
             onClick={(values) => showEditModal({ ...record, ...values })}
             onEdit={onEdit}
+            id={record.wishId}
             valueName={record.name}
             valuePrice={record.price}
             valuePlatform={record.platform}

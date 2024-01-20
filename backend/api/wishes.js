@@ -96,7 +96,8 @@ router.get("/", async (req, res) => {
       if (wishlistDoc.exists) {
         const wishlistData = wishlistDoc.data();
         // Format datetime using formatDatetime function
-        wishlistData.date = formatDatetime(wishlistData.date); // Assuming date is the datetime field
+        wishlistData.date = formatDatetime(wishlistData.date);
+        wishlistData.dateUpdated = formatDatetime(wishlistData.dateUpdated);
         return wishlistData;
       }
       return null;
@@ -156,10 +157,11 @@ router.post("/add", async (req, res) => {
     const newWish = {
       id: newWishId,
       date: date,
+      dateUpdated: date,
       ...value,
     };
 
-    const updatedWishes = { id: newWishId, date: date };
+    const updatedWishes = { id: newWishId, date: date, dateUpdated: date };
     wishes.push(updatedWishes);
     collectionData.wishlist = wishes;
 
@@ -212,16 +214,21 @@ router.patch("/edit", async (req, res) => {
         .json({ error: "Wish not found in the collection" });
     }
 
+    const newDate = new Date();
+
     const updatedWish = {
       ...wishes[wishIndex],
-      ...value,
+      dateUpdated: newDate,
     };
 
     wishes[wishIndex] = updatedWish;
     collectionData.wishlist = wishes;
 
     await collectionRef.update(collectionData);
-    await db.collection("wishlist").doc(wishId).update(value);
+    await db
+      .collection("wishlist")
+      .doc(wishId)
+      .update({ ...value, dateUpdated: new Date() });
 
     res.status(200).json({
       message: `Collection updated successfully`,
